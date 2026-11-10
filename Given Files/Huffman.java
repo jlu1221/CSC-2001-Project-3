@@ -1,12 +1,14 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
  * Project 3: Huffman Encoding / Decoding.
- *
+ * <p>
  * Implement the methods below to compress and decompress text files using
  * Huffman coding. See the assignment write-up for the full specification.
- *
+ * <p>
  *  - Treat characters as 8-bit values in the range [0, 255].
  *  - When writing output files, write the newline character explicitly as
  *    '\n' (do not rely on System.lineSeparator() / println()), so your
@@ -37,7 +39,7 @@ public class Huffman {
     // return value: a 256-entry frequency array indexed by byte/ASCII
     // example: cntFreq("letter.txt"[97]) = 'a'
     public static int[] cntFreq(String filename) throws IOException {
-        int[] freq = new int[NUM_CHARS];
+        int[] frequencies = new int[NUM_CHARS];
         for (byte value : Files.readAllBytes(Path.of(filename))) frequencies[Byte.toUnsignedInt(value)]++;
         return frequencies;
     }
@@ -46,7 +48,7 @@ public class Huffman {
      * Adds node to collection, preserving whatever ordering your chosen
      * implementation of collection relies on to make the minimum element
      * easy to find.
-     *
+     * <p>
      * You choose what kind of Collection to pass in when you call this
      * from createHuffTree(). For example, an ArrayList kept sorted by
      * HuffmanNode.comesBefore() as you insert (an "ordered list"), or a
@@ -79,7 +81,7 @@ public class Huffman {
      * minimum node and remove it.
      */
 
-    // parameter: colleciton nodes to search
+    // parameter: collection nodes to search
     // return value: the smallest node, or null when collection is empty
     // example: removing from {'b':2, 'a':1} return 'a':1
     public static HuffmanNode removeMin(Collection<HuffmanNode> collection) {
@@ -113,8 +115,8 @@ public class Huffman {
     public static HuffmanNode createHuffTree(int[] freq) {
         Collection<HuffmanNode> nodes = new ArrayList<>();
         for (int ascii = 0; ascii < NUM_CHARS; ascii++)
-            if (freq[ascii] > 0) addNode(nodes, new HuffmanNode(ascii, freq[ascii]));
-        while (nodes.size() > 1) addNode(nodes, NuffmanNodecombine(removeMin((nodes), removeMin(nodes))));
+            if (freq[ascii] > 0) addNode(nodes, new HuffmanNode(ascii, (int) freq[ascii]));
+        while (nodes.size() > 1) addNode(nodes, HuffmanNode.combine(removeMin((nodes)), removeMin(nodes)));
         return removeMin(nodes);
     }
 
@@ -179,20 +181,15 @@ public class Huffman {
 
     // parameter: inFile source file path, outFile destination file path, overwritten if it exists
     // return: nothing
-    // example: encoding a file containing onlly "aaa" writes the bytes for "97"
+    // example: encoding a file containing only "aaa" writes the bytes for "97"
     public static void huffmanEncode(String inFile, String outFile) throws IOException {
-       byte [] input = Files.readAllBytes(Path.of(inFile));
-       int[] freq = cntFreq(inFile);
-       if (input.length == 0) {
-           Files.write(Path.of(outFile, new byte[0]);
-           return;
-       }
-       String[] codes = createCode(createHuffTree(freq));
-       StringBuilder encoded = new StringBuilder(createHeader(freq)).append('\n');
-       for (byte value : input)
-           encoded.append(codes[Byte.toUnsignedInt(value)]);
-       Files.writeString(Path.of(outFile), encoded.toString(), java.nio.charset.StandardCharsets.US_ASCII);
-
+        byte[] input = Files.readAllBytes(Path.of(inFile));
+        int[] freq = cntFreq(inFile);
+        if (input.length == 0) { Files.write(Path.of(outFile), new byte[0]); return; }
+        String[] codes = createCode(createHuffTree(freq));
+        StringBuilder encoded = new StringBuilder(createHeader(freq)).append('\n');
+        for (byte value : input) encoded.append(codes[Byte.toUnsignedInt(value)]);
+        Files.writeString(Path.of(outFile), encoded.toString(), java.nio.charset.StandardCharsets.US_ASCII);
     }
 
     /**
@@ -210,7 +207,7 @@ public class Huffman {
         if (headerString == null || headerString.isBlank())
             return freq;
         String[] values = headerString.trim().split("\\s+");
-        if (vales.length % 2 != 0)
+        if (values.length % 2 != 0)
             throw new IllegalArgumentException("Header needs ASCII pairs");
         for (int i = 0; i < values.length; i += 2) {
             int ascii = Integer.parseInt(values[i]);

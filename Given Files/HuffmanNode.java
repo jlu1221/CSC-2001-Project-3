@@ -45,9 +45,14 @@ public record HuffmanNode(int charAscii, int freq, HuffmanNode left, HuffmanNode
      * and b's frequencies. The new node's charAscii value is the smaller
      * of a's and b's charAscii values (used to break ties later on).
      */
+    // parameter: a = one subtree, b = other subtree
+    // return: a parent whose frequency is the sum of the child freq.
+    // example: combine(new HuffmanNode('a', 1), new HuffmanNode('b', 2)).freq() returns 3
     public static HuffmanNode combine(HuffmanNode a, HuffmanNode b) {
-        // TODO: implement
-        return null;
+        HuffmanNode leftChild = comesBefore(a, b) ? a : b;
+        HuffmanNode rightChild = leftChild == a ? b : a;
+        return new HuffmanNode(Math.min(a.charAscii, b.charAscii), a.freq + b.freq,
+                leftChild, rightChild);
     }
 
     /**
@@ -55,6 +60,9 @@ public record HuffmanNode(int charAscii, int freq, HuffmanNode left, HuffmanNode
      * objects can be stored directly in a sorted structure (e.g. a
      * PriorityQueue or a sorted List) while building the tree.
      */
+    // parameter:  the other node to compare with this node
+    // return: a negative, zero, or positive values when this node comes before, equals, or follows other
+    // example: new HuffmanNode('a', 1).compareTo(new HuffmanNode('b', 1)) -> negative value
     @Override
     public int compareTo(HuffmanNode other) {
         if (comesBefore(this, other)) return -1;
